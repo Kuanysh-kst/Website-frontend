@@ -1,33 +1,44 @@
-    <template>
-        <div class="login-view">
-            <div class="login-container">
-                <h1>Login</h1>
-                <form @submit.prevent="handleLogin">
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            v-model="email"
-                            placeholder="Enter your email"
-                            required
-                        />
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            v-model="password"
-                            placeholder="Enter your password"
-                            required
-                        />
-                    </div>
-                    <button type="submit" class="login-button">Login</button>
-                </form>
-            </div>
+<template>
+  <div class="login-view">
+    <div class="login-container">
+      <h1>Login</h1>
+      <form @submit.prevent="handleLogin">
+        <div class="form-group">
+          <label for="email">Email (15 символов)</label>
+          <input
+            type="email"
+            id="email"
+            v-model="email"
+            placeholder="Enter your email"
+            @input="validateEmail"
+            required
+          />
+          <div v-if="emailError" class="error-message">{{ emailError }}</div>
         </div>
-    </template>
+        <div class="form-group">
+          <label for="password">Password (8+ символов)</label>
+          <input
+            type="password"
+            id="password"
+            v-model="password"
+            placeholder="Enter your password"
+            @input="validatePassword"
+            required
+          />
+          <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
+        </div>
+        <button 
+          type="submit" 
+          class="login-button"
+          :disabled="isBlocked || !formValid"
+        >
+          {{ isBlocked ? `Заблокировано (${remainingTime}с)` : 'Login' }}
+        </button>
+        <div v-if="authError" class="error-message">{{ authError }}</div>
+      </form>
+    </div>
+  </div>
+</template>
 
 <script>
 import authApi from '@/api/auth'
@@ -39,13 +50,60 @@ export default {
     return {
       email: "",
       password: "",
-      error: ""
+      emailError: "",
+      passwordError: "",
+      authError: "",
+      failedAttempts: 0,
+      isBlocked: false,
+      remainingTime: 60,
+      blockTimer: null
     };
   },
+  computed: {
+    formValid() {
+      return this.email.length === 15 && this.password.length >= 8 && !this.emailError
+    }
+  },
   methods: {
+    validateEmail() {
+      if (this.email.length < 15) {
+        this.emailError = "Логин должен содержать 15 букв"
+      } else {
+        this.emailError = ""
+      }
+    },
+    validatePassword() {
+      if (this.password.length < 8) {
+        this.passwordError = "Пароль должен содержать минимум 8 символов"
+      } else {
+        this.passwordError = ""
+      }
+    },
+    blockUser() {
+      this.isBlocked = true
+      this.remainingTime = 60
+      
+      this.blockTimer = setInterval(() => {
+        this.remainingTime--
+        if (this.remainingTime <= 0) {
+          clearInterval(this.blockTimer)
+          this.isBlocked = false
+          this.failedAttempts = 0
+        }
+      }, 1000)
+    },
     async handleLogin() {
+      // Валидация перед отправкой
+      this.validateEmail()
+      this.validatePassword()
+      
+      if (!this.formValid || this.isBlocked) return
+      
       try {
         const response = await authApi.login(this.email, this.password)
+        
+        // Сброс счетчика неудачных попыток при успешном входе
+        this.failedAttempts = 0
         
         // Сохраняем токен
         localStorage.setItem('jwtToken', response.data.token)
@@ -54,68 +112,92 @@ export default {
         this.$router.push('/hello')
         
       } catch (error) {
-        this.error = "Invalid credentials"
+        this.failedAttempts++
+        
+        if (this.failedAttempts >= 3) {
+          this.blockUser()
+          this.authError = "Ваш аккаунт заблокирован на 1 минуту"
+        } else {
+          this.authError = "Неверный логин или пароль"
+        }
+        
         console.error("Login error:", error)
       }
     },
   },
+  beforeUnmount() {
+    if (this.blockTimer) {
+      clearInterval(this.blockTimer)
+    }
+  }
 };
 </script>
 
 <style scoped>
 .login-view {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100vw;
-    background-color: #f5f5f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: #f5f5f5;
 }
 
+.login-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
 
-    .login-container {
-        background: white;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 400px;
-    }
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
 
-    h1 {
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
+.form-group {
+  margin-bottom: 1rem;
+}
 
-    .form-group {
-        margin-bottom: 1rem;
-    }
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
 
-    label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: bold;
-    }
+input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
 
-    input {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
+.login-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
 
-    .login-button {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 1rem;
-        cursor: pointer;
-    }
+.login-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
 
-    .login-button:hover {
-        background-color: #0056b3;
-    }
-    </style>
+.login-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+</style>
