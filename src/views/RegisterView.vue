@@ -108,7 +108,7 @@ export default {
       email: "",
       password: "",
       confirmPassword: "",
-      role: "ROLE_USER" // Установлена роль по умолчанию
+      role: "ROLE_USER", // Установлена роль по умолчанию
     });
 
     const errors = ref({
@@ -168,7 +168,7 @@ export default {
           lastname: form.value.lastName,
           email: form.value.email,
           password: form.value.password,
-          role: form.value.role // Всегда "USER"
+          role: form.value.role, // Всегда "USER"
         });
 
         successMessage.value = "Registration successful! Redirecting to login...";
@@ -210,10 +210,11 @@ export default {
 .register-view {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   min-height: 100vh;
   width: 100vw;
   background-color: #f5f5f5;
+  overflow-y: auto;
 }
 
 .register-container {
@@ -223,6 +224,8 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 500px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 h1 {
