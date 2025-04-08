@@ -4,7 +4,7 @@
       <h1>Login</h1>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label for="email">Email (15 символов)</label>
+          <label for="email">Email (15 characters)</label>
           <input
             type="email"
             id="email"
@@ -16,7 +16,7 @@
           <div v-if="emailError" class="error-message">{{ emailError }}</div>
         </div>
         <div class="form-group">
-          <label for="password">Password (8+ символов)</label>
+          <label for="password">Password (8+ characters)</label>
           <input
             type="password"
             id="password"
@@ -27,13 +27,13 @@
           />
           <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
         </div>
-        <button 
-          type="submit" 
-          class="login-button"
-          :disabled="isBlocked || !formValid"
-        >
-          {{ isBlocked ? `Заблокировано (${remainingTime}с)` : 'Login' }}
+        <button type="submit" class="login-button" :disabled="isBlocked || !formValid">
+          {{ isBlocked ? `Blocked (${remainingTime}s)` : "Login" }}
         </button>
+        <div class="register-prompt">
+          <span>Not registered yet?</span>
+          <router-link to="/register">Create an account</router-link>
+        </div>
         <div v-if="authError" class="error-message">{{ authError }}</div>
       </form>
     </div>
@@ -41,8 +41,8 @@
 </template>
 
 <script>
-import authApi from '@/api/auth'
-import { useRouter } from 'vue-router'
+import authApi from "@/api/auth";
+import { useRouter } from "vue-router";
 
 export default {
   name: "LoginView",
@@ -56,80 +56,79 @@ export default {
       failedAttempts: 0,
       isBlocked: false,
       remainingTime: 60,
-      blockTimer: null
+      blockTimer: null,
     };
   },
   computed: {
     formValid() {
-      return this.email.length === 15 && this.password.length >= 8 && !this.emailError
-    }
+      return this.email.length === 15 && this.password.length >= 8 && !this.emailError;
+    },
   },
   methods: {
     validateEmail() {
       if (this.email.length < 15) {
-        this.emailError = "Логин должен содержать 15 букв"
+        this.emailError = "Username must contain 15 characters";
       } else {
-        this.emailError = ""
+        this.emailError = "";
       }
     },
     validatePassword() {
       if (this.password.length < 8) {
-        this.passwordError = "Пароль должен содержать минимум 8 символов"
+        this.passwordError = "Password must contain at least 8 characters";
       } else {
-        this.passwordError = ""
+        this.passwordError = "";
       }
     },
     blockUser() {
-      this.isBlocked = true
-      this.remainingTime = 60
-      
+      this.isBlocked = true;
+      this.remainingTime = 60;
+
       this.blockTimer = setInterval(() => {
-        this.remainingTime--
+        this.remainingTime--;
         if (this.remainingTime <= 0) {
-          clearInterval(this.blockTimer)
-          this.isBlocked = false
-          this.failedAttempts = 0
+          clearInterval(this.blockTimer);
+          this.isBlocked = false;
+          this.failedAttempts = 0;
         }
-      }, 1000)
+      }, 1000);
     },
     async handleLogin() {
       // Валидация перед отправкой
-      this.validateEmail()
-      this.validatePassword()
-      
-      if (!this.formValid || this.isBlocked) return
-      
+      this.validateEmail();
+      this.validatePassword();
+
+      if (!this.formValid || this.isBlocked) return;
+
       try {
-        const response = await authApi.login(this.email, this.password)
-        
+        const response = await authApi.login(this.email, this.password);
+
         // Сброс счетчика неудачных попыток при успешном входе
-        this.failedAttempts = 0
-        
+        this.failedAttempts = 0;
+
         // Сохраняем токен
-        localStorage.setItem('jwtToken', response.data.token)
-        
+        localStorage.setItem("jwtToken", response.data.token);
+
         // Перенаправляем на защищенную страницу
-        this.$router.push('/hello')
-        
+        this.$router.push("/hello");
       } catch (error) {
-        this.failedAttempts++
-        
+        this.failedAttempts++;
+
         if (this.failedAttempts >= 3) {
-          this.blockUser()
-          this.authError = "Ваш аккаунт заблокирован на 1 минуту"
+          this.blockUser();
+          this.authError = "Your account is blocked for 1 minute";
         } else {
-          this.authError = "Неверный логин или пароль"
+          this.authError = "Invalid email or password";
         }
-        
-        console.error("Login error:", error)
+
+        console.error("Login error:", error);
       }
     },
   },
   beforeUnmount() {
     if (this.blockTimer) {
-      clearInterval(this.blockTimer)
+      clearInterval(this.blockTimer);
     }
-  }
+  },
 };
 </script>
 
@@ -199,5 +198,20 @@ input {
   color: #dc3545;
   font-size: 0.875rem;
   margin-top: 0.25rem;
+}
+.register-prompt {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.register-prompt a {
+  color: #007bff;
+  text-decoration: none;
+  margin-left: 5px;
+}
+
+.register-prompt a:hover {
+  text-decoration: underline;
 }
 </style>
