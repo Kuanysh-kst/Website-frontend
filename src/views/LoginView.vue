@@ -1,6 +1,6 @@
 <template>
   <div class="login-view">
-    <div class="login-container">
+    <div class="container">
       <h1>Login</h1>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
@@ -29,7 +29,7 @@
           />
           <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
         </div>
-        <button type="submit" class="login-button" :disabled="isBlocked || !formValid">
+        <button type="submit" :disabled="isBlocked || !formValid">
           {{ isBlocked ? `Blocked (${remainingTime}s)` : "Login" }}
         </button>
         <div class="register-prompt">
@@ -153,15 +153,6 @@ export default {
   background-color: #f5f5f5;
 }
 
-.login-container {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 400px;
-}
-
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -175,13 +166,6 @@ label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: bold;
-}
-
-input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 .login-button {
