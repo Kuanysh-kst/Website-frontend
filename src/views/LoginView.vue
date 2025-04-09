@@ -12,6 +12,7 @@
             placeholder="Enter your email"
             @input="validateEmail"
             required
+            maxlength="50"
           />
           <div v-if="emailError" class="error-message">{{ emailError }}</div>
         </div>
@@ -24,6 +25,7 @@
             placeholder="Enter your password"
             @input="validatePassword"
             required
+            maxlength="50"
           />
           <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
         </div>
@@ -61,19 +63,28 @@ export default {
   },
   computed: {
     formValid() {
-      return this.email.length === 15 && this.password.length >= 8 && !this.emailError;
+      return (
+        this.email.length <= 50 &&
+        this.password.length >= 8 &&
+        !this.emailError &&
+        !this.passwordError
+      );
     },
   },
   methods: {
     validateEmail() {
-      if (this.email.length < 15) {
-        this.emailError = "Username must contain 15 characters";
+      if (this.email.length >= 50) {
+        this.emailError = "The limit is 50 characters";
+      } else if (this.email.length < 15) {
+        this.emailError = "Username must contain at least 15 characters";
       } else {
         this.emailError = "";
       }
     },
     validatePassword() {
-      if (this.password.length < 8) {
+      if (this.password.length >= 50) {
+        this.passwordError = "The limit is 50 characters";
+      } else if (this.password.length < 8) {
         this.passwordError = "Password must contain at least 8 characters";
       } else {
         this.passwordError = "";
