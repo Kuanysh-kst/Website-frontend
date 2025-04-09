@@ -1,6 +1,6 @@
 <template>
   <div class="register-view">
-    <div class="register-container">
+    <div class="container">
       <h1>Create Account</h1>
       <form @submit.prevent="handleRegister">
         <!-- First Name -->
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Submit Button -->
-        <button type="submit" class="register-button" :disabled="!formValid || loading">
+        <button type="submit" :disabled="!formValid || loading">
           {{ loading ? "Processing..." : "Register" }}
         </button>
 
@@ -245,7 +245,7 @@ export default {
   overflow-y: auto;
 }
 
-.register-container {
+.container {
   background: white;
   padding: 2rem;
   border-radius: 8px;
@@ -287,7 +287,7 @@ input:focus {
   outline: none;
 }
 
-.register-button {
+button {
   width: 100%;
   padding: 0.75rem;
   background-color: #007bff;
@@ -301,11 +301,11 @@ input:focus {
   transition: background-color 0.3s;
 }
 
-.register-button:hover:not(:disabled) {
+button:hover:not(:disabled) {
   background-color: #0069d9;
 }
 
-.register-button:disabled {
+button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
 }

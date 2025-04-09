@@ -23,7 +23,7 @@ const routes = [
   {
     path: '/hello',
     name: 'hello',
-    component: () => import('../views/HelloView.vue'),
+    component: () => import('@/views/HelloView.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -44,18 +44,5 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('jwtToken')
-
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    // Неавторизованный пользователь → логин
-    next('/login')
-  } else if (to.meta.public && isAuthenticated) {
-    // Авторизованный пытается зайти на публичную (login/register) → домой
-    next('/home')
-  } else {
-    next()
-  }
-})
-
+// Удалена логика перенаправления в beforeEach
 export default router

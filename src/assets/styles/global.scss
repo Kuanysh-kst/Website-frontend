@@ -1,0 +1,126 @@
+// Общие переменные
+$primary-color: #007bff;
+$secondary-color: #0056b3;
+$error-color: #dc3545;
+$success-color: #28a745;
+$background-color: #f5f5f5;
+$text-color: #333;
+$font-family: 'Arial', sans-serif;
+
+// Сброс box-sizing
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+// Базовые стили
+body {
+  font-family: $font-family;
+  background-color: $background-color;
+  color: $text-color;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Контейнер
+.container {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  margin: 1rem auto;
+}
+
+// Заголовок
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: $text-color;
+}
+
+// Формы
+.form-group {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: $text-color;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+
+    &:focus {
+      border-color: $primary-color;
+      outline: none;
+    }
+  }
+}
+
+// Кнопка
+button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.3s;
+
+  &:hover:not(:disabled) {
+    background-color: $secondary-color;
+  }
+
+  &:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+}
+
+// Ошибки / успехи
+.error-message {
+  color: $error-color;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.success-message {
+  color: $success-color;
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+// Ссылки
+a {
+  color: $primary-color;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Подсказка регистрации
+.register-prompt,
+.login-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: $text-color;
+}
