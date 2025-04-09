@@ -18,15 +18,20 @@
         </div>
         <div class="form-group">
           <label for="password">Password (min 8 characters)</label>
-          <input
-            type="password"
-            id="password"
-            v-model="password"
-            placeholder="Enter your password"
-            @input="validatePassword"
-            required
-            maxlength="50"
-          />
+          <div class="password-wrapper">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
+              v-model="password"
+              placeholder="Enter your password"
+              @input="validatePassword"
+              required
+              maxlength="50"
+            />
+            <span class="toggle-password" @click="togglePasswordVisibility">
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </span>
+          </div>
           <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
         </div>
         <button type="submit" :disabled="isBlocked || !formValid">
@@ -59,6 +64,7 @@ export default {
       isBlocked: false,
       remainingTime: 60,
       blockTimer: null,
+      showPassword: false, // Состояние для отображения/скрытия пароля
     };
   },
   computed: {
@@ -89,6 +95,9 @@ export default {
       } else {
         this.passwordError = "";
       }
+    },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     },
     blockUser() {
       this.isBlocked = true;
@@ -165,6 +174,29 @@ h1 {
 label {
   display: block;
   margin-bottom: 0.5rem;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem; /* Оставляем место для иконки */
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #007bff;
+  font-size: 1.25rem;
+}
+
+.toggle-password:hover {
+  color: #0056b3;
 }
 
 .login-button {
