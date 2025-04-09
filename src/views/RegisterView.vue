@@ -11,8 +11,11 @@
             id="firstName"
             v-model="form.firstName"
             placeholder="Enter your first name"
+            @input="validateLength('firstName', 'First Name')"
             required
+            maxlength="50"
           />
+          <div v-if="errors.firstName" class="error-message">{{ errors.firstName }}</div>
         </div>
 
         <!-- Last Name -->
@@ -23,8 +26,11 @@
             id="lastName"
             v-model="form.lastName"
             placeholder="Enter your last name"
+            @input="validateLength('lastName', 'Last Name')"
             required
+            maxlength="50"
           />
+          <div v-if="errors.lastName" class="error-message">{{ errors.lastName }}</div>
         </div>
 
         <!-- Email -->
@@ -37,6 +43,7 @@
             placeholder="Enter your email"
             @input="validateEmail"
             required
+            maxlength="50"
           />
           <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
         </div>
@@ -51,6 +58,7 @@
             placeholder="Enter your password"
             @input="validatePassword"
             required
+            maxlength="50"
           />
           <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
         </div>
@@ -65,6 +73,7 @@
             placeholder="Confirm your password"
             @input="validatePasswordMatch"
             required
+            maxlength="50"
           />
           <div v-if="errors.confirmPassword" class="error-message">
             {{ errors.confirmPassword }}
@@ -112,6 +121,8 @@ export default {
     });
 
     const errors = ref({
+      firstName: "",
+      lastName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -124,16 +135,28 @@ export default {
         form.value.email &&
         form.value.password &&
         form.value.confirmPassword &&
+        !errors.value.firstName &&
+        !errors.value.lastName &&
         !errors.value.email &&
         !errors.value.password &&
         !errors.value.confirmPassword
       );
     });
 
+    const validateLength = (field, fieldName) => {
+      if (form.value[field].length >= 50) {
+        errors.value[field] = "The limit is 50 characters";
+      } else {
+        errors.value[field] = "";
+      }
+    };
+
     const validateEmail = () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(form.value.email)) {
         errors.value.email = "Please enter a valid email address";
+      } else if (form.value.email.length >= 50) {
+        errors.value.email = "The limit is 50 characters";
       } else {
         errors.value.email = "";
       }
@@ -142,6 +165,8 @@ export default {
     const validatePassword = () => {
       if (form.value.password.length < 8) {
         errors.value.password = "Password must be at least 8 characters";
+      } else if (form.value.password.length >= 50) {
+        errors.value.password = "The limit is 50 characters";
       } else {
         errors.value.password = "";
       }
@@ -151,6 +176,8 @@ export default {
     const validatePasswordMatch = () => {
       if (form.value.password !== form.value.confirmPassword) {
         errors.value.confirmPassword = "Passwords do not match";
+      } else if (form.value.confirmPassword.length >= 50) {
+        errors.value.confirmPassword = "The limit is 50 charactersd";
       } else {
         errors.value.confirmPassword = "";
       }
@@ -197,6 +224,7 @@ export default {
       successMessage,
       errorMessage,
       formValid,
+      validateLength,
       validateEmail,
       validatePassword,
       validatePasswordMatch,
