@@ -4,7 +4,7 @@
       <h1>Login</h1>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label for="email">Email (15 characters)</label>
+          <label for="email">Email (min 15 characters)</label>
           <input
             type="email"
             id="email"
@@ -17,7 +17,7 @@
           <div v-if="emailError" class="error-message">{{ emailError }}</div>
         </div>
         <div class="form-group">
-          <label for="password">Password (8+ characters)</label>
+          <label for="password">Password (min 8 characters)</label>
           <input
             type="password"
             id="password"
@@ -165,7 +165,6 @@ h1 {
 label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: bold;
 }
 
 .login-button {
