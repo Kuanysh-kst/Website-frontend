@@ -51,30 +51,43 @@
         <!-- Password -->
         <div class="form-group">
           <label for="password">Password* (min 8 characters)</label>
-          <input
-            type="password"
-            id="password"
-            v-model="form.password"
-            placeholder="Enter your password"
-            @input="validatePassword"
-            required
-            maxlength="50"
-          />
+          <div class="password-wrapper">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              id="password"
+              v-model="form.password"
+              placeholder="Enter your password"
+              @input="validatePassword"
+              required
+              maxlength="50"
+            />
+            <span class="toggle-password" @click="togglePasswordVisibility('password')">
+              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </span>
+          </div>
           <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
         </div>
 
         <!-- Confirm Password -->
         <div class="form-group">
           <label for="confirmPassword">Confirm Password*</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            v-model="form.confirmPassword"
-            placeholder="Confirm your password"
-            @input="validatePasswordMatch"
-            required
-            maxlength="50"
-          />
+          <div class="password-wrapper">
+            <input
+              :type="showConfirmPassword ? 'text' : 'password'"
+              id="confirmPassword"
+              v-model="form.confirmPassword"
+              placeholder="Confirm your password"
+              @input="validatePasswordMatch"
+              required
+              maxlength="50"
+            />
+            <span
+              class="toggle-password"
+              @click="togglePasswordVisibility('confirmPassword')"
+            >
+              <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </span>
+          </div>
           <div v-if="errors.confirmPassword" class="error-message">
             {{ errors.confirmPassword }}
           </div>
@@ -128,6 +141,17 @@ export default {
       confirmPassword: "",
     });
 
+    const showPassword = ref(false); // Состояние для отображения/скрытия пароля
+    const showConfirmPassword = ref(false); // Состояние для отображения/скрытия подтверждения пароля
+
+    const togglePasswordVisibility = (field) => {
+      if (field === "password") {
+        showPassword.value = !showPassword.value;
+      } else if (field === "confirmPassword") {
+        showConfirmPassword.value = !showConfirmPassword.value;
+      }
+    };
+
     const formValid = computed(() => {
       return (
         form.value.firstName &&
@@ -177,7 +201,7 @@ export default {
       if (form.value.password !== form.value.confirmPassword) {
         errors.value.confirmPassword = "Passwords do not match";
       } else if (form.value.confirmPassword.length >= 50) {
-        errors.value.confirmPassword = "The limit is 50 charactersd";
+        errors.value.confirmPassword = "The limit is 50 characters";
       } else {
         errors.value.confirmPassword = "";
       }
@@ -229,6 +253,9 @@ export default {
       validatePassword,
       validatePasswordMatch,
       handleRegister,
+      showPassword,
+      showConfirmPassword,
+      togglePasswordVisibility,
     };
   },
 };
@@ -336,5 +363,28 @@ button:disabled {
 
 .login-link a:hover {
   text-decoration: underline;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 2.5rem; /* Оставляем место для иконки */
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #007bff;
+  font-size: 1.25rem;
+}
+
+.toggle-password:hover {
+  color: #0056b3;
 }
 </style>
