@@ -45,12 +45,16 @@
             required
             maxlength="50"
           />
-          <div v-if="errors.email" class="error-message">{{ errors.email }}</div>
+          <div v-if="errors.email.length" class="error-message">
+            <ul>
+              <li v-for="(error, index) in errors.email" :key="index">{{ error }}</li>
+            </ul>
+          </div>
         </div>
 
         <!-- Password -->
         <div class="form-group">
-          <label for="password">Password* (min 8 characters)</label>
+          <label for="password">Password*</label>
           <div class="password-wrapper">
             <input
               :type="showPassword ? 'text' : 'password'"
@@ -65,7 +69,11 @@
               <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
             </span>
           </div>
-          <div v-if="errors.password" class="error-message">{{ errors.password }}</div>
+          <div v-if="errors.password.length" class="error-message">
+            <ul>
+              <li v-for="(error, index) in errors.password" :key="index">{{ error }}</li>
+            </ul>
+          </div>
         </div>
 
         <!-- Confirm Password -->
@@ -176,35 +184,47 @@ export default {
     };
 
     const validateEmail = () => {
+      const emailErrors = [];
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(form.value.email)) {
-        errors.value.email = "Please enter a valid email address";
-      } else if (form.value.email.length >= 50) {
-        errors.value.email = "The limit is 50 characters";
-      } else {
-        errors.value.email = "";
+
+      if (form.value.email.length < 15) {
+        emailErrors.push("Email must contain at least 15 characters");
       }
+      if (!emailRegex.test(form.value.email)) {
+        emailErrors.push("Please enter a valid email address");
+      }
+      if (form.value.email.length >= 50) {
+        emailErrors.push("The limit is 50 characters");
+      }
+
+      errors.value.email = emailErrors; // Сохраняем массив ошибок
     };
 
     const validatePassword = () => {
+      const passwordErrors = [];
+
       if (form.value.password.length < 8) {
-        errors.value.password = "Password must be at least 8 characters";
-      } else if (form.value.password.length >= 50) {
-        errors.value.password = "The limit is 50 characters";
-      } else {
-        errors.value.password = "";
+        passwordErrors.push("Password must be at least 8 characters");
       }
+      if (form.value.password.length >= 50) {
+        passwordErrors.push("The limit is 50 characters");
+      }
+
+      errors.value.password = passwordErrors; // Сохраняем массив ошибок
       validatePasswordMatch();
     };
 
     const validatePasswordMatch = () => {
+      const confirmPasswordErrors = [];
+
       if (form.value.password !== form.value.confirmPassword) {
-        errors.value.confirmPassword = "Passwords do not match";
-      } else if (form.value.confirmPassword.length >= 50) {
-        errors.value.confirmPassword = "The limit is 50 characters";
-      } else {
-        errors.value.confirmPassword = "";
+        confirmPasswordErrors.push("Passwords do not match");
       }
+      if (form.value.confirmPassword.length >= 50) {
+        confirmPasswordErrors.push("The limit is 50 characters");
+      }
+
+      errors.value.confirmPassword = confirmPasswordErrors; // Сохраняем массив ошибок
     };
 
     const handleRegister = async () => {
@@ -386,5 +406,17 @@ button:disabled {
 
 .toggle-password:hover {
   color: #0056b3;
+}
+
+.error-message ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.error-message li {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 </style>
