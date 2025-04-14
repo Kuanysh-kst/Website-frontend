@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '../views/LoginView.vue'
+import jwtDecode from 'jwt-decode';
 
 const routes = [
   {
@@ -44,5 +45,26 @@ const router = createRouter({
   routes
 })
 
-// Удалена логика перенаправления в beforeEach
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('access_token');
+  let isAuthenticated = false;
+
+  if (token) {
+    const decodedToken = jwtDecode(token);
+    const currentTime = Math.floor(Date.now() / 1000); // Текущее время в секундах
+
+    if (decodedToken.exp > currentTime) {
+      isAuthenticated = true; // Токен действителен
+    } else {
+      localStorage.removeItem('access_token'); // Удаляем просроченный токен
+    }
+  }
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+
 export default router
