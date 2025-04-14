@@ -50,21 +50,31 @@ router.beforeEach((to, from, next) => {
   let isAuthenticated = false;
 
   if (token) {
-    const decodedToken = jwtDecode(token);
-    const currentTime = Math.floor(Date.now() / 1000); // Текущее время в секундах
+    try {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Math.floor(Date.now() / 1000); // Текущее время в секундах
 
-    if (decodedToken.exp > currentTime) {
-      isAuthenticated = true; // Токен действителен
-    } else {
-      localStorage.removeItem('access_token'); // Удаляем просроченный токен
+      if (decodedToken.exp > currentTime) {
+        isAuthenticated = true; // Токен действителен
+      } else {
+        localStorage.removeItem('access_token'); // Удаляем просроченный токен
+      }
+    } catch (error) {
+      console.error('Invalid token:', error);
+      localStorage.removeItem('access_token'); // Удаляем некорректный токен
     }
   }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
+    // Если маршрут требует авторизации, а токен недействителен
     next('/login');
   } else {
-    next();
+    next(); // Разрешаем переход
   }
+
+  console.log('Навигация к:', to.fullPath);
+  console.log('Token:', token);
+  console.log('isAuthenticated:', isAuthenticated);
 });
 
 export default router

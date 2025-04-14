@@ -126,8 +126,8 @@ export default {
         this.failedAttempts = 0;
 
         // Сохраняем токен
-        localStorage.setItem("access_token", response.data.access_token);
-        localStorage.setItem("refresh_token", response.data.access_token);
+        localStorage.setItem('access_token', response.data.access_token);
+        localStorage.setItem('refresh_token', response.data.refresh_token);
 
         // Перенаправляем на защищенную страницу
         this.$router.push("/hello");
