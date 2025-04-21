@@ -4,6 +4,10 @@ import jwtDecode from 'jwt-decode';
 
 const routes = [
   {
+    path: '/',
+    redirect: '/dashboard' // Перенаправление на страницу входа
+  },
+  {
     path: '/login',
     name: 'login',
     component: LoginView,
@@ -22,9 +26,9 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/hello',
-    name: 'hello',
-    component: () => import('@/views/HelloView.vue'),
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('@/views/DashboardView.vue'),
     meta: { requiresAuth: true }
   },
   {
