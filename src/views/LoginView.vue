@@ -130,7 +130,7 @@ export default {
         localStorage.setItem('refresh_token', response.data.refresh_token);
 
         // Перенаправляем на защищенную страницу
-        this.$router.push("/hello");
+        this.$router.push("/dashboard");
       } catch (error) {
         this.failedAttempts++;
 
