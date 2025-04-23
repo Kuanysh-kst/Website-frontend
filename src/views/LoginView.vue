@@ -28,18 +28,17 @@
               required
               maxlength="50"
             />
-            <span class="toggle-password" @click="togglePasswordVisibility">
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </span>
+            <PasswordToggle :show="showPassword" @toggle="togglePasswordVisibility" />
           </div>
+
           <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
         </div>
         <button type="submit" :disabled="isBlocked || !formValid">
           {{ isBlocked ? `Blocked (${remainingTime}s)` : "Login" }}
         </button>
-        <div class="register-prompt">
+        <div class="signup-prompt">
           <span>Not registered yet?</span>
-          <router-link to="/register">Create an account</router-link>
+          <router-link to="/signup">Create an account</router-link>
         </div>
         <div v-if="authError" class="error-message">{{ authError }}</div>
       </form>
@@ -49,7 +48,7 @@
 
 <script>
 import authApi from "@/api/auth";
-import { useRouter } from "vue-router";
+import PasswordToggle from "@/components/PasswordToggle.vue";
 
 export default {
   name: "LoginView",
@@ -126,8 +125,8 @@ export default {
         this.failedAttempts = 0;
 
         // Сохраняем токен
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('refresh_token', response.data.refresh_token);
+        localStorage.setItem("access_token", response.data.access_token);
+        localStorage.setItem("refresh_token", response.data.refresh_token);
 
         // Перенаправляем на защищенную страницу
         this.$router.push("/dashboard");
@@ -144,6 +143,9 @@ export default {
         console.error("Login error:", error);
       }
     },
+  },
+  components: {
+    PasswordToggle,
   },
   beforeUnmount() {
     if (this.blockTimer) {
@@ -186,20 +188,6 @@ label {
   padding-right: 2.5rem; /* Оставляем место для иконки */
 }
 
-.toggle-password {
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #007bff;
-  font-size: 1.25rem;
-}
-
-.toggle-password:hover {
-  color: #0056b3;
-}
-
 .login-button {
   width: 100%;
   padding: 0.75rem;
@@ -226,19 +214,19 @@ label {
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
-.register-prompt {
+.signup-prompt {
   margin-top: 1rem;
   text-align: center;
   font-size: 0.9rem;
 }
 
-.register-prompt a {
+.signup-prompt a {
   color: #007bff;
   text-decoration: none;
   margin-left: 5px;
 }
 
-.register-prompt a:hover {
+.signup-prompt a:hover {
   text-decoration: underline;
 }
 </style>

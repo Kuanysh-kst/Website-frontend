@@ -14,28 +14,22 @@ const routes = [
     meta: { public: true } // Доступ без аутентификации
   },
   {
-    path: '/home',
-    name: 'home',
-    component: () => import('../views/HomeView.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/about',
-    name: 'about',
-    component: () => import('../views/AboutView.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/views/DashboardView.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/register',
-    name: 'register',
-    component: () => import('../views/RegisterView.vue'),
+    path: '/signup',
+    name: 'signup',
+    component: () => import('../views/SignUpView.vue'),
     meta: { public: true } // Зарегистрироваться можно без авторизации
+  },
+  {
+    path: "/verify",
+    name: "verify",
+    component: () => import("../views/VerifyEmailView.vue"),
+    meta: { public: true }, // Доступ без авторизации
   },
   // Опционально: страница 404
   {

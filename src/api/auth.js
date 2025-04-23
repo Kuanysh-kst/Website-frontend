@@ -11,7 +11,13 @@ export default {
   login(email, password) {
     return api.post('/authenticate', { email, password })
   },
-  register(userData) {
-    return api.post('/register', userData)
+  signup(userData) {
+    return api.post('/signup', userData)
+  },
+  verify(email, verificationCode) {
+    return api.post('/verify', { email, verificationCode })
+  },
+  resend(email) {
+    return api.post('/resend', { email })
   }
 }
