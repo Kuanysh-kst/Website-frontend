@@ -1,7 +1,6 @@
 <script setup>
 import { ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
-import PasswordToggle from "@/components/PasswordToggle.vue";
 import authApi from "@/api/auth";
 
 const router = useRouter();

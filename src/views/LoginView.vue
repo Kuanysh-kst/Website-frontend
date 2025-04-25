@@ -2,8 +2,6 @@
 import { ref, computed, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import authApi from "@/api/auth";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline"; // npm install @heroicons/vue
-import PasswordToggle from "@/components/PasswordToggle.vue";
 
 const router = useRouter();
 

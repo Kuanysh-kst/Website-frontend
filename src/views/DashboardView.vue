@@ -1,20 +1,19 @@
 <script setup>
-import { useRouter } from "vue-router";
-import ProductCard from "@/components/ProductCard.vue";
-
-const router = useRouter();
-
-const logout = () => {
-  localStorage.removeItem("access_token");
-  router.push("/login");
-};
+import DashboardHeader from "@/components/DashboardHeader.vue";
+import ProductCardList from "@/components/ProductCardList.vue";
+import Drawer from "@/components/Drawer.vue";
 </script>
 
 <template>
-  <div>
-    <h1>Welcome to Dashboard</h1>
-    <button @click="logout">Logout</button>
-  </div>
+  <!-- <Drawer /> -->
+  <DashboardHeader />
 
-  <ProductCard title="Nike" :price="10000" :is-added=true />
+  <div class="p-10">
+    <div class="flex justify-between">
+      <h2 class="text-3xl font-bold mb-8">Весь Товар</h2>
+      <div></div>
+    </div>
+
+    <ProductCardList />
+  </div>
 </template>
