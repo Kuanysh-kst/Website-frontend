@@ -1,6 +1,7 @@
 <script setup>
 defineProps({
   title: String,
+  description: String,
   imageUrl: String,
   price: Number,
   isFavorite: Boolean,
@@ -22,7 +23,8 @@ defineProps({
         @click="onClickFavorite"
       />
       <img :src="imageUrl" alt="Computer" />
-      <h2 mt-2>Товар: Кроссовки {{ title }}</h2>
+      <h2 mt-2>Товар: {{ title }}</h2>
+      <h2 mt-2>Описание: {{ description }}</h2>
       <div class="flex justify-between mt-5">
         <div class="flex flex-col">
           <span class="text-slate-400">Цена:</span>
