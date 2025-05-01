@@ -6,6 +6,7 @@ import DashboardHeader from "@/components/DashboardHeader.vue";
 import ProductCardList from "@/components/ProductCardList.vue";
 
 const items = ref([]);
+
 const filters = reactive({
   sortBy: "title",
   searchQuery: "",
@@ -17,6 +18,43 @@ const onChangeSelect = (event) => {
 
 const onChangeSearchInput = (event) => {
   filters.searchQuery = event.target.value;
+};
+
+const fetchFavorites = async () => {
+  try {
+    const token = localStorage.getItem("const_token");
+    console.log("token", token);
+    const { data: favorites } = await axios.get(`http://localhost:8080/api/favorites`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+      withCredentials: true, // если используешь куки, иначе можно опустить
+    });
+
+    items.value = items.value.map((item) => {
+      const favoriteItem = favorites.find((favorite) => favorite.productId === item.id);
+
+      if (!favoriteItem) {
+        return {
+          ...item,
+          isFavorite: false,
+          favoritesId: null,
+          favoriteProductId: null,
+        };
+      }
+
+      return {
+        ...item,
+        isFavorite: true,
+        favoritesId: favoriteItem.id,
+        favoriteProductId: favoriteItem.productId,
+      };
+    });
+
+    console.log(items.value);
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+  }
 };
 
 const fetchItems = async () => {
@@ -35,13 +73,20 @@ const fetchItems = async () => {
         params,
       }
     );
-    items.value = data.content;
+    items.value = data.content.map((obj) => ({
+      ...obj,
+      isFavorite: false,
+      isAdded: false,
+    }));
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 };
 
-onMounted(fetchItems);
+onMounted(async () => {
+  await fetchItems();
+  await fetchFavorites();
+});
 
 watch(filters, fetchItems);
 </script>
