@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref, watch } from "vue";
+import { onMounted, reactive, ref, watch, provide } from "vue";
 import axios from "axios";
 
 import DashboardHeader from "@/components/DashboardHeader.vue";
@@ -57,6 +57,43 @@ const fetchFavorites = async () => {
   }
 };
 
+const addToFavorite = async (item) => {
+  //item.isFavorite = !item.isFavorite;
+  try {
+    if (!item.isFavorite) {
+      const productId = item.id;
+      console.log(item.id);
+      const { data } = await axios.post(
+        `http://localhost:8080/api/favorites/${productId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          withCredentials: true, // если используешь куки, иначе можно опустить
+        }
+      );
+
+      item.isFavorite = true;
+      item.favoriteId = data.id;
+    } else {
+      const productId = item.id;
+      await axios.delete(
+        `http://localhost:8080/api/favorites/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+          withCredentials: true, // если используешь куки, иначе можно опустить
+        });
+        item.isFavorite = false;
+        item.favoriteId = null;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const fetchItems = async () => {
   try {
     const params = {
@@ -89,6 +126,8 @@ onMounted(async () => {
 });
 
 watch(filters, fetchItems);
+
+provide("addToFavorite", addToFavorite);
 </script>
 
 <template>
@@ -122,7 +161,7 @@ watch(filters, fetchItems);
     </div>
 
     <div class="mt-10">
-      <ProductCardList :items="items" />
+      <ProductCardList :items="items" @addToFavorite="addToFavorite" />
     </div>
   </div>
 </template>
