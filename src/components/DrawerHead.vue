@@ -1,6 +1,13 @@
+<script setup>
+import { inject} from 'vue';
+
+const {closeDrawer} = inject('cart')
+</script>
+
 <template>
   <div class="flex items-center gap-5 mb-5">
     <svg
+      @click="closeDrawer"
       width="7"
       height="12"
       viewBox="0 0 7 12"

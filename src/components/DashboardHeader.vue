@@ -1,6 +1,13 @@
 <script setup>
 import { useRouter } from "vue-router";
 
+defineProps({
+  totalPrice: Number,
+});
+
+const emit = defineEmits(["openDrawer"]);
+
+
 const router = useRouter();
 
 const logout = () => {
@@ -20,9 +27,12 @@ const logout = () => {
     </div>
 
     <ul class="flex items-center gap-10">
-      <li class="flex items-center gap-3 text-gray-500 hover:text-black cursor-pointer">
+      <li
+        class="flex items-center gap-3 text-gray-500 hover:text-black cursor-pointer"
+        @click="() => emit('openDrawer')"
+      >
         <img src="/cart.svg" alt="Cart" />
-        <b>9999999$</b>
+        <b>{{totalPrice}}$</b>
       </li>
       <li class="flex items-center gap-3 text-gray-500 hover:text-black cursor-pointer">
         <img src="/heart.svg" alt="Cart" />

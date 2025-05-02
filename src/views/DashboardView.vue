@@ -1,24 +1,55 @@
 <script setup>
-import { onMounted, reactive, ref, watch, provide } from "vue";
+import { onMounted, reactive, ref, watch, provide, computed } from "vue";
 import axios from "axios";
 
 import DashboardHeader from "@/components/DashboardHeader.vue";
 import ProductCardList from "@/components/ProductCardList.vue";
+import Drawer from "@/components/Drawer.vue";
 
 const items = ref([]);
+const cart = ref([]);
+
+const drawerOpen = ref(false);
+
+const closeDrawer = () => {
+  drawerOpen.value = false;
+};
+
+const openDrawer = () => {
+  drawerOpen.value = true;
+};
 
 const filters = reactive({
   sortBy: "title",
   searchQuery: "",
-});
+})
+
+const addToCart = (item) => {
+  cart.value.push(item);
+  item.isAdded = true;
+}
+
+const removeFromCart = (item) => {
+  cart.value.splice(cart.value.indexOf(item), 1);
+  item.isAdded = false;
+}
+
+const onClickCartAddButton = (item) => {
+  if (!item.isAdded) {
+    addToCart(item);
+  } else {
+    removeFromCart(item);
+  }
+  console.log(cart.value);
+}
 
 const onChangeSelect = (event) => {
   filters.sortBy = event.target.value;
-};
+}
 
 const onChangeSearchInput = (event) => {
   filters.searchQuery = event.target.value;
-};
+}
 
 const fetchFavorites = async () => {
   try {
@@ -55,13 +86,13 @@ const fetchFavorites = async () => {
   } catch (error) {
     console.error("Error fetching favorites:", error);
   }
-};
+}
 
 const addToFavorite = async (item) => {
   //item.isFavorite = !item.isFavorite;
+  const productId = item.id;
   try {
     if (!item.isFavorite) {
-      const productId = item.id;
       console.log(item.id);
       const { data } = await axios.post(
         `http://localhost:8080/api/favorites/${productId}`,
@@ -77,22 +108,19 @@ const addToFavorite = async (item) => {
       item.isFavorite = true;
       item.favoriteId = data.id;
     } else {
-      const productId = item.id;
-      await axios.delete(
-        `http://localhost:8080/api/favorites/${productId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          withCredentials: true, // если используешь куки, иначе можно опустить
-        });
-        item.isFavorite = false;
-        item.favoriteId = null;
+      await axios.delete(`http://localhost:8080/api/favorites/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        withCredentials: true, // если используешь куки, иначе можно опустить
+      });
+      item.isFavorite = false;
+      item.favoriteId = null;
     }
   } catch (err) {
     console.log(err);
   }
-};
+}
 
 const fetchItems = async () => {
   try {
@@ -118,21 +146,40 @@ const fetchItems = async () => {
   } catch (error) {
     console.error("Error fetching data:", error);
   }
-};
+}
 
+const totalPrice = computed(() => {
+  return cart.value.reduce((acc, item) => acc + item.price, 0);
+})
+
+const vatPrice = computed(() => {
+  return (Math.round(totalPrice.value * 5) / 100).toFixed(2);
+})
 onMounted(async () => {
   await fetchItems();
   await fetchFavorites();
-});
+})
 
-watch(filters, fetchItems);
+watch(filters, fetchItems)
 
-provide("addToFavorite", addToFavorite);
+provide("cart", {
+  cart,
+  closeDrawer,
+  openDrawer,
+  addToCart,
+  removeFromCart,
+})
 </script>
 
 <template>
-  <!-- <Drawer /> -->
-  <DashboardHeader />
+  <Drawer v-if="drawerOpen" 
+  :total-price = "totalPrice"
+  :vat-price="vatPrice"
+  />
+  <DashboardHeader 
+  @open-drawer="openDrawer"
+  :total-price = "totalPrice"
+   />
 
   <div class="p-10">
     <div class="flex justify-between items-center">
@@ -161,7 +208,11 @@ provide("addToFavorite", addToFavorite);
     </div>
 
     <div class="mt-10">
-      <ProductCardList :items="items" @addToFavorite="addToFavorite" />
+      <ProductCardList
+        :items="items"
+        @add-to-favorite="addToFavorite"
+        @add-to-cart="onClickCartAddButton"
+      />
     </div>
   </div>
 </template>
