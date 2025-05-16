@@ -1,24 +1,133 @@
+<script setup>
+import { ref, computed, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import authApi from "@/api/auth";
+
+const router = useRouter();
+
+const email = ref("");
+const password = ref("");
+const emailError = ref("");
+const passwordError = ref("");
+const authError = ref("");
+const failedAttempts = ref(0);
+const isBlocked = ref(false);
+const remainingTime = ref(60);
+const blockTimer = ref(null);
+const showPassword = ref(false);
+
+const formValid = computed(() => {
+  return (
+    email.value.length <= 50 &&
+    password.value.length >= 8 &&
+    !emailError.value &&
+    !passwordError.value
+  );
+});
+
+function validateEmail() {
+  if (email.value.length >= 50) {
+    emailError.value = "The limit is 50 characters";
+  } else if (email.value.length < 15) {
+    emailError.value = "Username must contain at least 15 characters";
+  } else {
+    emailError.value = "";
+  }
+}
+
+function validatePassword() {
+  if (password.value.length >= 50) {
+    passwordError.value = "The limit is 50 characters";
+  } else if (password.value.length < 8) {
+    passwordError.value = "Password must contain at least 8 characters";
+  } else {
+    passwordError.value = "";
+  }
+}
+
+function blockUser() {
+  isBlocked.value = true;
+  remainingTime.value = 60;
+  blockTimer.value = setInterval(() => {
+    remainingTime.value--;
+    if (remainingTime.value <= 0) {
+      clearInterval(blockTimer.value);
+      isBlocked.value = false;
+      failedAttempts.value = 0;
+    }
+  }, 1000);
+}
+
+async function handleLogin() {
+  validateEmail();
+  validatePassword();
+
+  if (!formValid.value || isBlocked.value) return;
+
+  try {
+    const response = await authApi.login(email.value, password.value);
+    failedAttempts.value = 0;
+
+    localStorage.setItem("access_token", response.data.access_token);
+    localStorage.setItem("refresh_token", response.data.refresh_token);
+
+    router.push("/home");
+  } catch (error) {
+    failedAttempts.value++;
+
+    if (failedAttempts.value >= 3) {
+      blockUser();
+      authError.value = "Your account is blocked for 1 minute";
+    } else {
+      authError.value = "Invalid email or password";
+    }
+
+    console.error("Login error:", error);
+  }
+}
+
+onBeforeUnmount(() => {
+  if (blockTimer.value) {
+    clearInterval(blockTimer.value);
+  }
+});
+</script>
+
 <template>
-  <div class="login-view">
-    <div class="container">
-      <h1>Login</h1>
-      <form @submit.prevent="handleLogin">
-        <div class="form-group">
-          <label for="email">Email (min 15 characters)</label>
-          <input
-            type="email"
-            id="email"
-            v-model="email"
-            placeholder="Enter your email"
-            @input="validateEmail"
-            required
-            maxlength="50"
-          />
-          <div v-if="emailError" class="error-message">{{ emailError }}</div>
+  <div class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+      <h1 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+        Login
+      </h1>
+    </div>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+      <form class="space-y-6" @submit.prevent="handleLogin">
+        <div>
+          <label for="email" class="block text-sm/6 font-medium text-gray-900"
+            >Email (min 15 characters)</label
+          >
+
+          <div class="mt-2">
+            <input
+              type="email"
+              id="email"
+              v-model="email"
+              placeholder="Enter your email"
+              @input="validateEmail"
+              required
+              maxlength="50"
+              class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
+            />
+            <div v-if="emailError">{{ emailError }}</div>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="password">Password (min 8 characters)</label>
-          <div class="password-wrapper">
+
+        <div>
+          <label for="password" class="block text-sm/6 font-medium text-gray-900"
+            >Password (min 8 characters)</label
+          >
+          <div class="mt-2">
             <input
               :type="showPassword ? 'text' : 'password'"
               id="password"
@@ -27,218 +136,44 @@
               @input="validatePassword"
               required
               maxlength="50"
+              class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
             />
-            <span class="toggle-password" @click="togglePasswordVisibility">
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </span>
+            <!-- Checkbox -->
+            <div class="flex items-center mt-4">
+              <input
+                id="toggle-password"
+                type="checkbox"
+                v-model="showPassword"
+                class="shrink-0 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+              />
+              <label for="toggle-password" class="ml-2 block text-sm text-gray-700">
+                Show password
+              </label>
+            </div>
+
+            <div v-if="passwordError">{{ passwordError }}</div>
           </div>
-          <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
         </div>
-        <button type="submit" :disabled="isBlocked || !formValid">
-          {{ isBlocked ? `Blocked (${remainingTime}s)` : "Login" }}
-        </button>
-        <div class="register-prompt">
-          <span>Not registered yet?</span>
-          <router-link to="/register">Create an account</router-link>
+        <div>
+          <button
+            type="submit"
+            :disabled="isBlocked || !formValid"
+            class="text-white inline-flex items-center justify-center whitespace-nowrap rounded-md text-base font-medium ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40 disabled:bg-gray-500 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 w-full h-[58px] bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-indigo-500/30 hover:transform hover:scale-105 transition-all"
+          >
+            {{ isBlocked ? `Blocked (${remainingTime}s)` : "Login" }}
+          </button>
         </div>
-        <div v-if="authError" class="error-message">{{ authError }}</div>
       </form>
+      <div class="mt-10 text-center text-sm/6 text-gray-500">
+        <span>Not registered yet? </span>
+        <router-link
+          to="/signup"
+          class="font-semibold text-indigo-600 hover:text-indigo-500"
+          >Create an account</router-link
+        >
+      </div>
+
+      <div v-if="authError" class="error-message">{{ authError }}</div>
     </div>
   </div>
 </template>
-
-<script>
-import authApi from "@/api/auth";
-import { useRouter } from "vue-router";
-
-export default {
-  name: "LoginView",
-  data() {
-    return {
-      email: "",
-      password: "",
-      emailError: "",
-      passwordError: "",
-      authError: "",
-      failedAttempts: 0,
-      isBlocked: false,
-      remainingTime: 60,
-      blockTimer: null,
-      showPassword: false, // Состояние для отображения/скрытия пароля
-    };
-  },
-  computed: {
-    formValid() {
-      return (
-        this.email.length <= 50 &&
-        this.password.length >= 8 &&
-        !this.emailError &&
-        !this.passwordError
-      );
-    },
-  },
-  methods: {
-    validateEmail() {
-      if (this.email.length >= 50) {
-        this.emailError = "The limit is 50 characters";
-      } else if (this.email.length < 15) {
-        this.emailError = "Username must contain at least 15 characters";
-      } else {
-        this.emailError = "";
-      }
-    },
-    validatePassword() {
-      if (this.password.length >= 50) {
-        this.passwordError = "The limit is 50 characters";
-      } else if (this.password.length < 8) {
-        this.passwordError = "Password must contain at least 8 characters";
-      } else {
-        this.passwordError = "";
-      }
-    },
-    togglePasswordVisibility() {
-      this.showPassword = !this.showPassword;
-    },
-    blockUser() {
-      this.isBlocked = true;
-      this.remainingTime = 60;
-
-      this.blockTimer = setInterval(() => {
-        this.remainingTime--;
-        if (this.remainingTime <= 0) {
-          clearInterval(this.blockTimer);
-          this.isBlocked = false;
-          this.failedAttempts = 0;
-        }
-      }, 1000);
-    },
-    async handleLogin() {
-      // Валидация перед отправкой
-      this.validateEmail();
-      this.validatePassword();
-
-      if (!this.formValid || this.isBlocked) return;
-
-      try {
-        const response = await authApi.login(this.email, this.password);
-
-        // Сброс счетчика неудачных попыток при успешном входе
-        this.failedAttempts = 0;
-
-        // Сохраняем токен
-        localStorage.setItem('access_token', response.data.access_token);
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-
-        // Перенаправляем на защищенную страницу
-        this.$router.push("/dashboard");
-      } catch (error) {
-        this.failedAttempts++;
-
-        if (this.failedAttempts >= 3) {
-          this.blockUser();
-          this.authError = "Your account is blocked for 1 minute";
-        } else {
-          this.authError = "Invalid email or password";
-        }
-
-        console.error("Login error:", error);
-      }
-    },
-  },
-  beforeUnmount() {
-    if (this.blockTimer) {
-      clearInterval(this.blockTimer);
-    }
-  },
-};
-</script>
-
-<style scoped>
-.login-view {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  width: 100vw;
-  background-color: #f5f5f5;
-}
-
-h1 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.password-wrapper {
-  position: relative;
-}
-
-.password-wrapper input {
-  width: 100%;
-  padding-right: 2.5rem; /* Оставляем место для иконки */
-}
-
-.toggle-password {
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: #007bff;
-  font-size: 1.25rem;
-}
-
-.toggle-password:hover {
-  color: #0056b3;
-}
-
-.login-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
-}
-
-.login-button:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.login-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-.register-prompt {
-  margin-top: 1rem;
-  text-align: center;
-  font-size: 0.9rem;
-}
-
-.register-prompt a {
-  color: #007bff;
-  text-decoration: none;
-  margin-left: 5px;
-}
-
-.register-prompt a:hover {
-  text-decoration: underline;
-}
-</style>
