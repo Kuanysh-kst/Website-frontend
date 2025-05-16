@@ -5,33 +5,45 @@ import jwtDecode from 'jwt-decode';
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard' // Перенаправление на страницу входа
+    redirect: '/dashboard'
   },
   {
     path: '/login',
     name: 'login',
     component: LoginView,
-    meta: { public: true } // Доступ без аутентификации
+    meta: { public: true } 
   },
   {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: () => import('@/views/DashboardView.vue'),
+    path: '/',
+    name: 'app',
+    component: () => import('@/App.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/signup',
     name: 'signup',
     component: () => import('../views/SignUpView.vue'),
-    meta: { public: true } // Зарегистрироваться можно без авторизации
+    meta: { public: true } 
   },
   {
     path: "/verify",
     name: "verify",
     component: () => import("../views/VerifyEmailView.vue"),
-    meta: { public: true }, // Доступ без авторизации
+    meta: { public: true },
   },
-  // Опционально: страница 404
+  {
+    path: "/favorites",
+    name: "favorites",
+    component: () => import("../views/FavoritesView.vue"),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/home",
+    name: "home",
+    component: () => import("../views/HomeView.vue"),
+    meta: { requiresAuth: false },
+  }
+  ,
   {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
@@ -50,29 +62,24 @@ router.beforeEach((to, from, next) => {
   if (token) {
     try {
       const decodedToken = jwtDecode(token);
-      const currentTime = Math.floor(Date.now() / 1000); // Текущее время в секундах
+      const currentTime = Math.floor(Date.now() / 1000);
 
       if (decodedToken.exp > currentTime) {
-        isAuthenticated = true; // Токен действителен
+        isAuthenticated = true;
       } else {
-        localStorage.removeItem('access_token'); // Удаляем просроченный токен
+        localStorage.removeItem('access_token');
       }
     } catch (error) {
       console.error('Invalid token:', error);
-      localStorage.removeItem('access_token'); // Удаляем некорректный токен
+      localStorage.removeItem('access_token');
     }
   }
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // Если маршрут требует авторизации, а токен недействителен
     next('/login');
   } else {
-    next(); // Разрешаем переход
+    next(); 
   }
-
-  console.log('Навигация к:', to.fullPath);
-  console.log('Token:', token);
-  console.log('isAuthenticated:', isAuthenticated);
 });
 
 export default router

@@ -1,5 +1,4 @@
 <script setup>
-
 defineProps({
   id: Number,
   title: String,
@@ -9,9 +8,8 @@ defineProps({
   isFavorite: Boolean,
   isAdded: Boolean,
   onClickFavorite: Function,
-  onClickAdd: Function
+  onClickAdd: Function,
 });
-
 </script>
 
 <template>
@@ -20,6 +18,7 @@ defineProps({
       class="relative m-10 border border-slate-200 rounded-3xl p-8 cursor-pointer hover:-translate-y-2 hover:shadow-xl transition bg-white"
     >
       <img
+        v-if="onClickFavorite"
         :src="isFavorite ? '/like-1.svg' : '/like-2.svg'"
         alt="Like 1 "
         class="absolute top-8 left-8"
@@ -34,6 +33,7 @@ defineProps({
           <b>{{ price }}</b>
         </div>
         <img
+          v-if="onClickAdd"
           :src="!isAdded ? '/plus.svg' : '/checked.svg'"
           alt="Plus"
           @click="onClickAdd"

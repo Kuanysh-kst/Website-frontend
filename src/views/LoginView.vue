@@ -45,10 +45,6 @@ function validatePassword() {
   }
 }
 
-function togglePasswordVisibility() {
-  showPassword.value = !showPassword.value;
-}
-
 function blockUser() {
   isBlocked.value = true;
   remainingTime.value = 60;
@@ -75,7 +71,7 @@ async function handleLogin() {
     localStorage.setItem("access_token", response.data.access_token);
     localStorage.setItem("refresh_token", response.data.refresh_token);
 
-    router.push("/dashboard");
+    router.push("/home");
   } catch (error) {
     failedAttempts.value++;
 

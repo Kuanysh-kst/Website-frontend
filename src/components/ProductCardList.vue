@@ -3,18 +3,14 @@ import ProductCard from "@/components/ProductCard.vue";
 
 defineProps({
   items: Array,
+  isFavorites: Boolean,
 });
 
-const emit = defineEmits(['addToFavorite', 'addToCart']);
-
-const onClickAdd = () => {
-  alert(1111);
-};
-
+const emit = defineEmits(["addToFavorite", "addToCart"]);
 </script>
 
 <template>
-  <div class="grid grid-cols-4">
+  <div class="grid grid-cols-4" v-auto-animate>
     <ProductCard
       v-for="item in items"
       :key="item.id"
@@ -23,8 +19,8 @@ const onClickAdd = () => {
       :image-url="item.imageUrl"
       :price="item.price"
       :description="item.description"
-      :onClickAdd="()=>emit('addToCart', item)"
-      :onClickFavorite="()=>emit('addToFavorite', item)"
+      :onClickAdd="isFavorites ? null : () => emit('addToCart', item)"
+      :onClickFavorite="isFavorites ? null : () => emit('addToFavorite', item)"
       :isFavorite="item.isFavorite"
       :isAdded="item.isAdded"
     />
