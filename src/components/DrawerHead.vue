@@ -1,15 +1,32 @@
 <script setup>
-import { inject } from "vue";
+import { inject, onMounted, onUnmounted } from "vue";
 
 const { closeDrawer } = inject("cart");
+
+// Функция для обработки нажатия ESC
+const handleKeyDown = (event) => {
+  if (event.key === "Escape") {
+    closeDrawer();
+  }
+};
+
+// Добавляем слушатель при монтировании
+onMounted(() => {
+  window.addEventListener("keydown", handleKeyDown);
+});
+
+// Удаляем слушатель при размонтировании (очистка)
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeyDown);
+});
 </script>
 
 <template>
   <div class="flex items-center gap-5 mb-5">
     <svg
       @click="closeDrawer"
-      width="7"
-      height="12"
+      width="24"
+      height="24"
       viewBox="0 0 7 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
